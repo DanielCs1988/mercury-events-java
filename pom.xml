@@ -8,6 +8,14 @@
     <artifactId>mercuryevents</artifactId>
     <version>1.0</version>
 
+    <repositories>
+        <repository>
+            <id>project.local</id>
+            <name>project</name>
+            <url>file:${project.basedir}/repo</url>
+        </repository>
+    </repositories>
+
     <build>
         <plugins>
             <plugin>
@@ -30,8 +38,8 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <minimizeJar>true</minimizeJar>
-                            <createDependencyReducedPom>true</createDependencyReducedPom>
+                            <minimizeJar>false</minimizeJar>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
                             <dependencyReducedPomLocation>
                                 ${java.io.tmpdir}/dependency-reduced-pom.xml
                             </dependencyReducedPomLocation>
@@ -46,7 +54,6 @@
                 </executions>
             </plugin>
             <plugin>
-                <!-- Build an executable JAR -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>2.4</version>
