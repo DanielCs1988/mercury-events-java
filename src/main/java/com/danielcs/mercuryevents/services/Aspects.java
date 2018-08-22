@@ -7,8 +7,8 @@ import com.danielcs.webserver.core.annotations.AspectType;
 import com.danielcs.webserver.http.Request;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.sql.Timestamp;
-import java.util.Arrays;
 
 public class Aspects {
 
@@ -46,7 +46,7 @@ public class Aspects {
             return false;
         }
         if (!event.getOrganizer().equals(request.getProperty("userId"))) {
-            String ip = request.getAddress().toString();
+            InetSocketAddress ip = request.getAddress();
             request.getResponder().sendError(401, "Unauthorized modification from " + ip + "!");
             return false;
         }

@@ -1,23 +1,19 @@
 package com.danielcs.mercuryevents.middleware;
 
 import com.danielcs.webserver.http.*;
-import org.jose4j.jwa.AlgorithmConstraints;
-import org.jose4j.jwk.HttpsJwks;
-import org.jose4j.jws.AlgorithmIdentifiers;
 import org.jose4j.jwt.JwtClaims;
 import org.jose4j.jwt.MalformedClaimException;
 import org.jose4j.jwt.consumer.*;
-import org.jose4j.keys.resolvers.HttpsJwksVerificationKeyResolver;
 
 import java.io.IOException;
 import java.util.Date;
 
 public class Authenticator implements HttpMiddleware {
 
-    private final HttpsJwksVerificationKeyResolver resolver;
+    private final JwtConsumer jwtConsumer;
 
-    public Authenticator(HttpsJwks httpsJwks) {
-        this.resolver = new HttpsJwksVerificationKeyResolver(httpsJwks);
+    public Authenticator(JwtConsumer jwtConsumer) {
+        this.jwtConsumer = jwtConsumer;
     }
 
     @Override
@@ -27,18 +23,6 @@ public class Authenticator implements HttpMiddleware {
             return false;
         }
         try {
-            JwtConsumer jwtConsumer = new JwtConsumerBuilder()
-                    .setRequireExpirationTime()
-                    .setExpectedIssuer(System.getenv("ISSUER"))
-                    .setExpectedAudience(System.getenv("AUDIENCE"))
-                    .setVerificationKeyResolver(resolver)
-                    .setJweAlgorithmConstraints(
-                            new AlgorithmConstraints(
-                                    AlgorithmConstraints.ConstraintType.WHITELIST,
-                                    AlgorithmIdentifiers.RSA_USING_SHA256
-                            )
-                    )
-                    .build();
             JwtClaims claims = jwtConsumer.processToClaims(token);
             if (claims.getExpirationTime().getValueInMillis() < new Date().getTime()) {
                 responder.sendError(401, "The token has expired!");

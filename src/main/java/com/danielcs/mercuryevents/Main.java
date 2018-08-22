@@ -4,7 +4,12 @@ import com.danielcs.mercuryevents.repository.utils.SQLUtils;
 import com.danielcs.webserver.core.Application;
 import com.danielcs.webserver.core.annotations.Dependency;
 import com.danielcs.webserver.http.BasicHttpServer;
+import org.jose4j.jwa.AlgorithmConstraints;
 import org.jose4j.jwk.HttpsJwks;
+import org.jose4j.jws.AlgorithmIdentifiers;
+import org.jose4j.jwt.consumer.JwtConsumer;
+import org.jose4j.jwt.consumer.JwtConsumerBuilder;
+import org.jose4j.keys.resolvers.HttpsJwksVerificationKeyResolver;
 
 public class Main {
 
@@ -18,8 +23,21 @@ public class Main {
     }
 
     @Dependency
-    public HttpsJwks getJwks() {
-        return new HttpsJwks(System.getenv("JWKS_URI"));
+    public JwtConsumer buildJwtConsumer() {
+        HttpsJwks httpsJwks = new HttpsJwks(System.getenv("JWKS_URI"));
+        HttpsJwksVerificationKeyResolver resolver = new HttpsJwksVerificationKeyResolver(httpsJwks);
+        return new JwtConsumerBuilder()
+                .setRequireExpirationTime()
+                .setExpectedIssuer(System.getenv("ISSUER"))
+                .setExpectedAudience(System.getenv("AUDIENCE"))
+                .setVerificationKeyResolver(resolver)
+                .setJweAlgorithmConstraints(
+                        new AlgorithmConstraints(
+                                AlgorithmConstraints.ConstraintType.WHITELIST,
+                                AlgorithmIdentifiers.RSA_USING_SHA256
+                        )
+                )
+                .build();
     }
 
     @Dependency
